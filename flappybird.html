@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Bird</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    background-color: #70c5ce;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Bird
+  let birdX = 50;
+  let birdY = canvas.height / 2;
+  let birdDY = 0;
+  const birdSize = 20;
+
+  // Gravity
+  const gravity = 0.5;
+  const lift = -10;
+
+  // Pipe
+  const pipeWidth = 50;
+  const pipeGap = 200;
+  let pipeX = canvas.width;
+  let pipeY = Math.floor(Math.random() * (canvas.height - pipeGap));
+  let pipeSpeed = 2;
+  let gameover = false;
+
+  function draw() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw bird
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(birdX, birdY, birdSize, birdSize);
+
+    // Draw pipe
+    ctx.fillStyle = '#008000';
+    ctx.fillRect(pipeX, 0, pipeWidth, pipeY);
+    ctx.fillRect(pipeX, pipeY + pipeGap, pipeWidth, canvas.height - pipeY - pipeGap);
+
+    if (gameover) {
+      ctx.fillStyle = '#000';
+      ctx.font = '24px Arial';
+      ctx.fillText('Game Over!', 50, canvas.height / 2);
+    }
+  }
+
+  function update() {
+    if (gameover) return;
+
+    // Update bird
+    birdDY += gravity;
+    birdY += birdDY;
+
+    // Update pipe
+    pipeX -= pipeSpeed;
+
+    // Check for collision
+    if ((birdX + birdSize > pipeX && birdX < pipeX + pipeWidth) &&
+        (birdY < pipeY || birdY + birdSize > pipeY + pipeGap)) {
+      gameover = true;
+    }
+
+    // Reset pipe position if it's off the screen
+    if (pipeX + pipeWidth < 0) {
+      pipeX = canvas.width;
+      pipeY = Math.floor(Math.random() * (canvas.height - pipeGap));
+    }
+
+    // Check if bird hits the ground
+    if (birdY + birdSize > canvas.height) {
+      gameover = true;
+    }
+
+    draw();
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space' && !gameover) {
+      birdDY = lift;
+    }
+
+    if (gameover && event.code === 'Space') {
+      resetGame();
+    }
+  });
+
+  function resetGame() {
+    birdY = canvas.height / 2;
+    birdDY = 0;
+    pipeX = canvas.width;
+    pipeY = Math.floor(Math.random() * (canvas.height - pipeGap));
+    gameover = false;
+  }
+
+  setInterval(update, 1000 / 60);
+</script>
+</body>
+</html>
